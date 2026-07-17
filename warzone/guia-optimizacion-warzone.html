@@ -1,0 +1,425 @@
+<title>Optimización PC · Warzone competitivo</title>
+<style>
+  /* ---- reset mínimo ---- */
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; }
+  h1,h2,h3,h4,p,ul,ol,figure,table { margin: 0; }
+  img { max-width: 100%; display: block; }
+
+  /* ---- tokens: tema oscuro por defecto ---- */
+  :root {
+    --ground:  #0c0f12;
+    --surface: #14191e;
+    --raised:  #1b2127;
+    --hair:    #2a333c;
+    --hair-soft:#212a31;
+    --text:    #c8d1d9;
+    --head:    #eef3f7;
+    --muted:   #7f8c99;
+    --accent:  #ffb23e;   /* ámbar señal */
+    --accent-dim:#7a5a24;
+    --ok:      #4cc98a;
+    --danger:  #f2585f;
+    --steel:   #5b9dd9;
+    --ok-bg:   rgba(76,201,138,.10);
+    --danger-bg:rgba(242,88,95,.10);
+    --accent-bg:rgba(255,178,62,.10);
+    --shadow:  0 1px 0 rgba(255,255,255,.02), 0 8px 30px rgba(0,0,0,.35);
+    --mono: ui-monospace, "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --ground:  #e7ebee;
+      --surface: #ffffff;
+      --raised:  #f4f7f9;
+      --hair:    #d4dce2;
+      --hair-soft:#e4eaee;
+      --text:    #232b33;
+      --head:    #10151b;
+      --muted:   #5c6773;
+      --accent:  #b96c05;
+      --accent-dim:#e6c48a;
+      --ok:      #12855a;
+      --danger:  #c5373d;
+      --steel:   #2f6fb0;
+      --ok-bg:   rgba(18,133,90,.08);
+      --danger-bg:rgba(197,55,61,.07);
+      --accent-bg:rgba(185,108,5,.08);
+      --shadow:  0 1px 2px rgba(16,21,27,.05), 0 10px 30px rgba(16,21,27,.06);
+    }
+  }
+  /* overrides explícitos del toggle del visor (ganan a la media query) */
+  :root[data-theme="dark"] {
+    --ground:#0c0f12; --surface:#14191e; --raised:#1b2127; --hair:#2a333c; --hair-soft:#212a31;
+    --text:#c8d1d9; --head:#eef3f7; --muted:#7f8c99; --accent:#ffb23e; --accent-dim:#7a5a24;
+    --ok:#4cc98a; --danger:#f2585f; --steel:#5b9dd9;
+    --ok-bg:rgba(76,201,138,.10); --danger-bg:rgba(242,88,95,.10); --accent-bg:rgba(255,178,62,.10);
+    --shadow:0 1px 0 rgba(255,255,255,.02), 0 8px 30px rgba(0,0,0,.35);
+  }
+  :root[data-theme="light"] {
+    --ground:#e7ebee; --surface:#ffffff; --raised:#f4f7f9; --hair:#d4dce2; --hair-soft:#e4eaee;
+    --text:#232b33; --head:#10151b; --muted:#5c6773; --accent:#b96c05; --accent-dim:#e6c48a;
+    --ok:#12855a; --danger:#c5373d; --steel:#2f6fb0;
+    --ok-bg:rgba(18,133,90,.08); --danger-bg:rgba(197,55,61,.07); --accent-bg:rgba(185,108,5,.08);
+    --shadow:0 1px 2px rgba(16,21,27,.05), 0 10px 30px rgba(16,21,27,.06);
+  }
+
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 920px; margin: 0 auto; padding: clamp(20px, 4vw, 56px) clamp(16px, 4vw, 40px) 80px; }
+
+  /* ---- tipografía ---- */
+  h2 { font-size: clamp(1.3rem, 2.4vw, 1.7rem); font-weight: 800; color: var(--head); letter-spacing: -.02em; text-wrap: balance; line-height: 1.2; }
+  h3 { font-size: 1.05rem; font-weight: 700; color: var(--head); letter-spacing: -.01em; margin-top: 2px; }
+  p { max-width: 66ch; }
+  a { color: var(--accent); text-decoration-color: color-mix(in srgb, var(--accent) 40%, transparent); text-underline-offset: 2px; }
+  strong { color: var(--head); font-weight: 700; }
+  .eyebrow {
+    font-family: var(--mono); font-size: .72rem; font-weight: 600; letter-spacing: .18em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .mono { font-family: var(--mono); }
+  code {
+    font-family: var(--mono); font-size: .86em;
+    background: var(--raised); border: 1px solid var(--hair-soft);
+    padding: .08em .4em; border-radius: 5px; color: var(--head);
+    overflow-wrap: anywhere;
+  }
+
+  /* ---- header / briefing ---- */
+  .hero { border-bottom: 1px solid var(--hair); padding-bottom: 30px; margin-bottom: 40px; }
+  .hero h1 {
+    font-size: clamp(1.9rem, 5vw, 3rem); font-weight: 800; color: var(--head);
+    letter-spacing: -.03em; line-height: 1.03; text-wrap: balance; margin: 14px 0 0;
+  }
+  .hero h1 .amber { color: var(--accent); }
+  .hero .sub { color: var(--muted); margin-top: 14px; font-size: 1.02rem; max-width: 62ch; }
+
+  .rig { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+  .chip {
+    font-family: var(--mono); font-size: .78rem; color: var(--text);
+    background: var(--surface); border: 1px solid var(--hair);
+    padding: 6px 11px; border-radius: 999px; display: inline-flex; gap: 7px; align-items: center;
+  }
+  .chip b { color: var(--accent); font-weight: 600; }
+
+  /* ---- telemetría de latencia ---- */
+  .telem {
+    margin-top: 26px; background: var(--surface); border: 1px solid var(--hair);
+    border-radius: 14px; padding: 18px 20px; display: flex; flex-wrap: wrap;
+    align-items: center; gap: 20px 32px; box-shadow: var(--shadow);
+  }
+  .telem .read { display: flex; flex-direction: column; }
+  .telem .val { font-family: var(--mono); font-size: 2.1rem; font-weight: 700; color: var(--head); line-height: 1; letter-spacing: -.02em; }
+  .telem .val small { font-size: .95rem; color: var(--muted); font-weight: 500; }
+  .telem .cap { font-family: var(--mono); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 8px; }
+  .bar { flex: 1 1 220px; min-width: 180px; }
+  .bar .track { height: 8px; border-radius: 999px; background: linear-gradient(90deg, var(--ok), var(--accent) 55%, var(--danger)); opacity: .85; position: relative; }
+  .bar .mark { position: absolute; top: -4px; height: 16px; width: 3px; border-radius: 2px; background: var(--head); box-shadow: 0 0 0 2px var(--surface); }
+  .bar .scale { display: flex; justify-content: space-between; font-family: var(--mono); font-size: .66rem; color: var(--muted); margin-top: 7px; letter-spacing: .06em; }
+  .telem .note { flex: 1 1 100%; color: var(--muted); font-size: .9rem; border-top: 1px dashed var(--hair); padding-top: 12px; }
+  .telem .note b { color: var(--ok); }
+
+  /* ---- callout ---- */
+  .callout {
+    display: flex; gap: 14px; align-items: flex-start;
+    background: var(--accent-bg); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+    border-radius: 12px; padding: 16px 18px; margin: 24px 0;
+  }
+  .callout .ic { font-size: 1.1rem; line-height: 1.5; }
+  .callout p { margin: 0; max-width: none; }
+  .callout.danger { background: var(--danger-bg); border-color: color-mix(in srgb, var(--danger) 38%, transparent); }
+
+  /* ---- verdict board ---- */
+  .section { margin-top: 54px; }
+  .section > .eyebrow { display: block; margin-bottom: 8px; }
+  .lead { color: var(--muted); margin-top: 8px; max-width: 66ch; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 14px; margin-top: 22px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--hair); border-radius: 12px;
+    padding: 18px 18px 18px 20px; position: relative; overflow: hidden; box-shadow: var(--shadow);
+  }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); }
+  .card.ok::before { background: var(--ok); }
+  .card.warn::before { background: var(--danger); }
+  .card .tag { font-family: var(--mono); font-size: .68rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+  .card h4 { color: var(--head); font-size: 1rem; font-weight: 700; margin: 7px 0 6px; letter-spacing: -.01em; }
+  .card p { font-size: .9rem; color: var(--text); max-width: none; }
+
+  /* ---- bloques de sección ---- */
+  .block { margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--hair-soft); }
+  .block:first-of-type { border-top: 0; }
+  .blockhead { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .tier {
+    font-family: var(--mono); font-size: .68rem; font-weight: 700; letter-spacing: .08em;
+    text-transform: uppercase; padding: 3px 9px; border-radius: 6px; white-space: nowrap;
+    border: 1px solid var(--hair); color: var(--muted); background: var(--raised);
+  }
+  .tier.t1 { color: var(--accent); border-color: var(--accent-dim); background: var(--accent-bg); }
+  .tier.t2 { color: var(--steel); border-color: color-mix(in srgb, var(--steel) 40%, transparent); background: color-mix(in srgb, var(--steel) 10%, transparent); }
+  .block p { margin-top: 12px; }
+  .block ul { margin: 12px 0 0; padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; }
+  .block ul li { position: relative; padding-left: 22px; max-width: 70ch; }
+  .block ul li::before { content: "›"; position: absolute; left: 4px; top: -1px; color: var(--accent); font-weight: 700; font-family: var(--mono); }
+  .block ul li b, .block ul li strong { color: var(--head); }
+
+  /* ---- tabla de estados ON/OFF ---- */
+  .panel { margin-top: 20px; border: 1px solid var(--hair); border-radius: 12px; overflow: hidden; background: var(--surface); }
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; min-width: 460px; }
+  thead th {
+    text-align: left; font-family: var(--mono); font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; padding: 12px 16px; background: var(--raised); border-bottom: 1px solid var(--hair);
+  }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--hair-soft); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody td:first-child { color: var(--head); font-weight: 600; }
+  .state { font-family: var(--mono); font-size: .74rem; font-weight: 700; letter-spacing: .05em; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .state.on  { color: var(--ok); background: var(--ok-bg); border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent); }
+  .state.off { color: var(--danger); background: var(--danger-bg); border: 1px solid color-mix(in srgb, var(--danger) 35%, transparent); }
+  .why { color: var(--muted); font-size: .86rem; }
+
+  /* ---- pasos numerados (secuencia real) ---- */
+  ol.steps { margin: 16px 0 0; padding: 0; list-style: none; counter-reset: s; display: flex; flex-direction: column; gap: 12px; }
+  ol.steps li { position: relative; padding-left: 40px; counter-increment: s; max-width: 70ch; }
+  ol.steps li::before {
+    content: counter(s); position: absolute; left: 0; top: -1px; width: 26px; height: 26px;
+    display: grid; place-items: center; border-radius: 7px; font-family: var(--mono); font-size: .8rem; font-weight: 700;
+    color: var(--accent); background: var(--accent-bg); border: 1px solid var(--accent-dim);
+  }
+
+  .keyval { display: inline-block; font-family: var(--mono); font-size: .84em; color: var(--accent); }
+
+  /* ---- footer ---- */
+  footer { margin-top: 60px; padding-top: 24px; border-top: 1px solid var(--hair); color: var(--muted); font-size: .82rem; }
+  footer .eyebrow { display: block; margin-bottom: 10px; }
+  footer p { max-width: none; font-size: .82rem; }
+
+  @media (max-width: 560px) {
+    .telem { gap: 16px; }
+    .telem .val { font-size: 1.7rem; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    a, .chip, .state { transition: color .15s ease, background-color .15s ease; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow">Informe de optimización · after-action report</span>
+    <h1>Warzone competitivo:<br>tu PC, <span class="amber">afinada de verdad</span>.</h1>
+    <p class="sub">Análisis personalizado con investigación verificada (fuentes 2025–2026). Sin humo de YouTube: lo que mueve la aguja en tu equipo, ordenado por prioridad.</p>
+
+    <div class="rig" aria-label="Especificaciones del equipo">
+      <span class="chip"><b>CPU</b> Ryzen X3D (3D V-Cache)</span>
+      <span class="chip"><b>RAM</b> 32 GB DDR5</span>
+      <span class="chip"><b>Principal</b> Samsung 4K OLED · 240 Hz</span>
+      <span class="chip"><b>Secundario</b> ASUS 1080p · 60 Hz</span>
+      <span class="chip"><b>SO</b> Windows custom «Kernel OS»</span>
+    </div>
+
+    <div class="telem" aria-label="Lectura de latencia">
+      <div class="read">
+        <span class="val">11–15 <small>ms</small></span>
+        <span class="cap">Game Latency</span>
+      </div>
+      <div class="bar">
+        <div class="track"><span class="mark" style="left: 16%;"></span></div>
+        <div class="scale"><span>0 · élite</span><span>20 · objetivo</span><span>50+ · lento</span></div>
+      </div>
+      <p class="note">Tu render/system latency (con Reflex activo) ya está en el <b>suelo competitivo</b>. No la persigas más: el trabajo real es la <b>estabilidad de frametimes</b>.</p>
+    </div>
+  </header>
+
+  <!-- ===== TL;DR ===== -->
+  <section class="section" id="tldr">
+    <span class="eyebrow">TL;DR · veredicto con criterio</span>
+    <h2>Las 5 decisiones que importan</h2>
+    <div class="cards">
+      <div class="card warn">
+        <span class="tag">01 · Sistema operativo</span>
+        <h4>Deja el «Kernel OS»</h4>
+        <p>Pásate a Windows 11 oficial (24H2). El debloat no te da FPS reales y tu custom puede estar <strong>bloqueándote Ranked</strong> por el anti-cheat.</p>
+      </div>
+      <div class="card ok">
+        <span class="tag">02 · Latencia</span>
+        <h4>Ya vas de élite</h4>
+        <p>11–15 ms es render latency, no ping. Está en el suelo competitivo. Cuida la <strong>consistencia</strong>, no el número.</p>
+      </div>
+      <div class="card">
+        <span class="tag">03 · FPS gratis</span>
+        <h4>Activa EXPO en la BIOS</h4>
+        <p>Sin EXPO tu DDR5 va a <span class="keyval">4800</span> en vez de <span class="keyval">~6000 CL30</span>. En X3D es un salto de doble dígito en 1% lows.</p>
+      </div>
+      <div class="card">
+        <span class="tag">04 · Monitor 2º</span>
+        <h4>El 60 Hz mete stutter</h4>
+        <p>Fix: <strong>Pantalla Completa Exclusiva</strong> + subir su Hz + mover Discord/navegador al principal.</p>
+      </div>
+      <div class="card">
+        <span class="tag">05 · Resolución</span>
+        <h4>Estirado 4:3 no aplica</h4>
+        <p>El OLED usa DSC y NVIDIA bloquea el estirado. Usa <strong>4K + DLSS</strong> o 1080p/1440p nativo.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 1. WINDOWS ===== -->
+  <section class="section" id="windows">
+    <span class="eyebrow">Decisión principal</span>
+    <h2>1 · «Kernel OS» vs Windows 11 oficial</h2>
+    <p class="lead">Recomendación: <strong>migra a Windows 11 oficial (24H2) limpio</strong> y aféinalo. No por moda — por tres motivos concretos.</p>
+
+    <div class="block">
+      <div class="blockhead"><h3>a) El motivo decisivo es el anti-cheat, no los FPS</h3></div>
+      <p>Desde la Temporada&nbsp;05 (ago 2025) y obligatorio en Warzone desde la S01 (dic 2025), <strong>Ricochet exige TPM&nbsp;2.0 + Secure Boot</strong> y lo valida en la nube (Microsoft Azure Attestation) — no es un chequeo local que se pueda engañar.</p>
+      <ul>
+        <li>Si tu «Kernel OS» tiene <b>Secure Boot OFF</b>, arranca en <b>Legacy/CSM</b> o el disco es <b>MBR</b> → <code>Failed Attestation Status</code> → pool restringida (solo BR Casual) con <b>Ranked bloqueado</b>. Desde la S04 (jun 2026) se aplica de forma activa.</li>
+        <li><b>No es un baneo</b> (eso es solo para trampas confirmadas) — pero te deja fuera de lo que te importa.</li>
+        <li><b>Verifícalo YA:</b> <code>msinfo32</code> → «Estado de arranque seguro = Activado» y «Modo de BIOS = UEFI»; <code>tpm.msc</code> → TPM 2.0. El script del repo te lo reporta solo.</li>
+      </ul>
+    </div>
+
+    <div class="block">
+      <div class="blockhead"><h3>b) En tu equipo, el debloat no da FPS reales</h3></div>
+      <p>En un rig <b>X3D + 32&nbsp;GB</b>, el debloat «no sube FPS de forma medible»; su único beneficio (frametimes algo más estables) se <strong>reproduce al 100% en Windows oficial</strong>. Las cifras tipo «217→365 FPS» de estas ISOs están desmentidas. El ahorro de RAM solo importa con ≤8&nbsp;GB — no es tu caso.</p>
+    </div>
+
+    <div class="block">
+      <div class="blockhead"><h3>c) La única palanca real de rendimiento es un clic en Windows oficial</h3></div>
+      <p>Lo que de verdad cuesta FPS es <strong>VBS / Integridad de memoria</strong> (~5–15% en juegos CPU-bound como Warzone). Y eso se <strong>desactiva con un clic en Windows 11 oficial</strong> — no necesitas una ISO custom para ganarlo.</p>
+
+      <div class="panel">
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Ajuste</th><th>Estado</th><th>Por qué</th></tr></thead>
+            <tbody>
+              <tr><td>Secure Boot</td><td><span class="state on">ON</span></td><td class="why">Obligatorio para Warzone. No afecta FPS.</td></tr>
+              <tr><td>TPM 2.0</td><td><span class="state on">ON</span></td><td class="why">Obligatorio para Warzone.</td></tr>
+              <tr><td>Windows Defender</td><td><span class="state on">ON</span></td><td class="why">Su ausencia debilita la seguridad y puede romper el arranque del driver anti-cheat.</td></tr>
+              <tr><td>VBS / Integridad de memoria</td><td><span class="state off">OFF</span></td><td class="why">~5–15% FPS. Seguro para el anti-cheat (no lo requiere).</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="ic">⚖️</span>
+        <p><b>Matiz honesto:</b> si el diagnóstico muestra que tu «Kernel OS» <b>ya tiene Secure Boot ON, pasa attestation y no rompió Defender/servicios</b>, reinstalar es <i>opcional</i> — bastaría con desactivar VBS y aplicar los ajustes de abajo. Si Secure Boot está <b>OFF</b>, ese es el motivo decisivo para instalar limpio.</p>
+      </div>
+
+      <p><b>24H2 vs 25H2:</b> 25H2 = <b>mismo rendimiento</b> que 24H2 (mismo código). No esperes FPS por el salto de versión. <b>24H2</b> es el objetivo estable.</p>
+    </div>
+  </section>
+
+  <!-- ===== 2. BIOS/RAM ===== -->
+  <section class="section" id="bios">
+    <div class="blockhead"><span class="tier t1">Tier 1</span><h2>2 · BIOS y RAM — el mayor FPS «gratis»</h2></div>
+    <ul>
+      <li><b>EXPO ON</b> (en ASUS: «EXPO&nbsp;I»). <b>Es lo primero.</b> Sin EXPO tu DDR5 corre a <span class="keyval">4800</span> con timings flojos en vez de sus <span class="keyval">~6000 CL30</span>; los X3D escalan muchísimo con RAM rápida → doble dígito en 1% lows. <i>El script te dice si vas por debajo de lo rated.</i></li>
+      <li><b>Resizable BAR ON</b> — recomendado y de bajo riesgo con RTX 40/50.</li>
+      <li><b>PBO / Curve Optimizer (opcional, avanzado):</b> 9800X3D → PBO + <span class="keyval">CO −20 a −30</span>; 7800X3D → solo Curve Optimizer negativo (va bloqueado). Aplica conservador, <b>stress-test</b>, y mantén <span class="keyval">SoC ≤ 1.3 V</span>.</li>
+    </ul>
+  </section>
+
+  <!-- ===== 3. LATENCIA ===== -->
+  <section class="section" id="latencia">
+    <div class="blockhead"><span class="tier t1">Tier 1</span><h2>3 · Latencia y NVIDIA</h2></div>
+    <p class="lead">Tu Game Latency ya es de élite. No la persigas — busca <strong>consistencia de frametimes / 1% lows</strong>, que se siente más en las peleas.</p>
+    <ul>
+      <li><b>NVIDIA Reflex = Activado + Boost</b> en Warzone: la palanca de latencia #1. <i>(Reflex&nbsp;2 / Frame Warp aún NO está en Warzone a mediados de 2026.)</i></li>
+      <li><b>Stack sin tearing (Blur Busters):</b> G-Sync/VRR <b>ON</b> (driver) · V-Sync <b>ON solo en el panel de NVIDIA</b> · V-Sync <b>OFF dentro de Warzone</b> · cap de FPS <span class="keyval">~225–233</span> para que la <b>GPU quede &lt; ~97%</b>.</li>
+      <li><b>Panel NVIDIA (perfil Warzone):</b> Modo de energía = <b>Máximo rendimiento</b> · Low Latency Mode = <b>On</b> (no Ultra) · Max Frame Rate = <span class="keyval">225</span>.</li>
+      <li><b>DLSS Frame Generation = OFF</b> para competitivo (suma 1–2 frames de latencia). Si lo activas, Reflex debe seguir ON.</li>
+      <li><b>Ratón:</b> <span class="keyval">1000 Hz</span> es el estándar. 2000–4000 aceptable; <b>evita 8000 Hz</b> en Warzone (roba ~2–3% de un núcleo y empeora tus 1% lows).</li>
+    </ul>
+  </section>
+
+  <!-- ===== 4. OLED ===== -->
+  <section class="section" id="oled">
+    <div class="blockhead"><span class="tier t1">Tier 1–2</span><h2>4 · Monitor OLED 4K 240</h2></div>
+    <ul>
+      <li><b>Modo:</b> DisplayPort 1.4 con <b>DSC</b> (latencia &lt;0.001 ms, invisible). Confirma <span class="keyval">3840×2160 @ 240 Hz</span> en Windows y en Warzone.</li>
+      <li><b>OSD:</b> Game Mode ON · FreeSync/VRR ON · <b>VRR Control ON</b> (mata el flicker OLED en escenas oscuras).</li>
+      <li><b>Panel NVIDIA:</b> G-Sync Compatible ON · <b>Rango dinámico = Completo (0–255)</b> (en Limitado se lavan los negros y pierdes visibilidad en sombras).</li>
+      <li><b>SDR, no HDR</b> para competitivo: más consistente, no aplasta sombras, no cuesta FPS.</li>
+      <li><b>BFI / ELMB = OFF:</b> baja el brillo ~50%, añade ~1 frame de lag y desactiva VRR. La respuesta OLED (~0.03 ms) ya te da claridad.</li>
+    </ul>
+
+    <div class="callout">
+      <span class="ic">🎯</span>
+      <p><b>Resolución competitiva:</b> como el OLED usa DSC para 4K@240, NVIDIA deja en gris las resoluciones personalizadas/DSR → <b>el estirado 4:3 (1440×1080) NO funciona</b> aquí sin perder los 240 Hz. Opciones: <b>(1)</b> 4K nativo + <b>DLSS Super Resolution</b> (Frame Gen OFF) — lo más limpio en tu rig; <b>(2)</b> 1440p/1080p nativo in-game para máximos FPS. No sacrifiques 240 Hz por forzar estirado.</p>
+    </div>
+  </section>
+
+  <!-- ===== 5. MONITOR SECUNDARIO ===== -->
+  <section class="section" id="secundario">
+    <div class="blockhead"><span class="tier t2">Tier 2</span><h2>5 · Fix del secundario a 60 Hz</h2></div>
+    <p class="lead">El microstutter por refrescos mixtos (240 + 60) <strong>sigue vivo en Windows 11 24H2</strong>. Aunque 60 divide limpio en 240, el problema es el compositor DWM/MPO/VRR. En orden de impacto:</p>
+    <ol class="steps">
+      <li><b>Pantalla Completa Exclusiva en Warzone</b> — evita el DWM por completo. Fix #1, además da menor latencia y +5–15% FPS. Si «desaparece», desactiva Modo Enfocado y overlays (Discord/GeForce/Steam) o fuérzala con <code>Alt+Enter</code>.</li>
+      <li><b>Sube el ASUS a su Hz real:</b> en <i>Config → Sistema → Pantalla → Pantalla avanzada</i> comprueba si es 60 Hz real o un panel de 75/144 que Windows dejó en 60.</li>
+      <li><b>Contenido dinámico al principal:</b> Discord con vídeo, navegador, OBS, YouTube al OLED, y <b>desactiva la aceleración por hardware</b> en Chrome/Firefox/Discord.</li>
+      <li><b>Si persiste, desactiva MPO:</b> <code>HKLM\SOFTWARE\Microsoft\Windows\Dwm</code> → <code>OverlayTestMode</code>=<span class="keyval">5</span>; en 24H2 añade <code>OverlayMinFPS</code>=<span class="keyval">0</span> y reinicia.</li>
+    </ol>
+  </section>
+
+  <!-- ===== 6. IN-GAME ===== -->
+  <section class="section" id="ingame">
+    <div class="blockhead"><span class="tier t2">Tier 2</span><h2>6 · Ajustes in-game de Warzone</h2></div>
+    <ul>
+      <li><b>Pantalla:</b> Completa Exclusiva (no Borderless) · V-Sync OFF · <b>Reflex Activado+Boost</b>.</li>
+      <li><b>Límites de FPS:</b> Juego <span class="keyval">~233</span> · Menú <span class="keyval">60</span> · Fuera de foco <span class="keyval">30</span>.</li>
+      <li><b>Texturas:</b> Resolución = <b>Alta</b> · <b>On-Demand Texture Streaming = OFF</b> (tienes 32 GB + VRAM; cargar local evita hitching). VRAM &lt; ~90%.</li>
+      <li><b>Claridad:</b> Motion Blur OFF · Profundidad de campo OFF · Film Grain 0 · AA = <b>SMAA T2X</b> (o DLAA a 4K) · <b>Frame Generation OFF</b>.</li>
+      <li><b>Shaders:</b> Shader Cache ON y <b>re-cachear tras cada parche y cada driver</b>. En NVIDIA: Shader Cache 10 GB/Ilimitado en tu NVMe.</li>
+    </ul>
+  </section>
+
+  <!-- ===== 7. WINDOWS TWEAKS ===== -->
+  <section class="section" id="win-tweaks">
+    <div class="blockhead"><span class="tier t2">Tier 2</span><h2>7 · Windows (oficial o custom)</h2></div>
+    <ul>
+      <li><b>Game Mode = ON</b> · <b>HAGS = ON</b> (en RTX 40/50 favorece a Reflex).</li>
+      <li><b>Plan de energía = Ultimate Performance</b> — evita core parking y downclocks (el mayor anti-microstutter en X3D):<br><code>powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61</code> y selecciónalo.</li>
+      <li>Apaga <b>Xbox Game Bar</b>, <b>Game DVR</b> y «grabar en segundo plano».</li>
+      <li><b>VBS / Integridad de memoria = OFF</b> (manteniendo Secure Boot + TPM + Defender ON).</li>
+      <li><b>Variable Refresh Rate = ON</b> en <i>Config → Juegos → Gráficos</i>.</li>
+    </ul>
+  </section>
+
+  <!-- ===== 8 + 9 ===== -->
+  <section class="section" id="mant">
+    <div class="blockhead"><h2>8 · Mantenimiento &amp; 9 · Cómo medir</h2></div>
+    <ul>
+      <li><b>Driver Game Ready por temporada</b> (clean install del instalador). <b>DDU</b> (Modo Seguro) solo ante regresiones, no en cada update.</li>
+      <li><b>Warzone en NVMe</b> con espacio libre (reduce streaming stutter).</li>
+      <li><b>Mide bien:</b> aplica <b>una cosa por vez</b>, mira <b>1% / 0.1% lows y frametimes</b> (overlay o PresentMon) en peleas reales, y <b>revierte</b> cualquier ajuste que meta stutter. Tu 11–15 ms es tu línea base de élite: consérvala.</li>
+    </ul>
+  </section>
+
+  <!-- ===== NEXT STEP ===== -->
+  <section class="section" id="next">
+    <div class="callout">
+      <span class="ic">▶</span>
+      <p><b>Siguiente paso:</b> ejecuta <code>diagnostico-pc.ps1</code> (en el mismo repo, botón derecho → Terminal Admin) y pégame el <code>reporte-warzone.txt</code>. Con tu estado real de <b>Secure Boot / attestation</b> y si <b>EXPO</b> está activo, cierro el análisis 100% personalizado y te digo si de verdad te toca reinstalar Windows o no.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span class="eyebrow">Fuentes · verificadas 2025–2026</span>
+    <p>Activision Support (TPM 2.0 + Secure Boot; Ricochet) · Call of Duty blog (Ricochet S01 dic-2025, S04 jun-2026) · NVIDIA (Reflex; Reflex 2/Frame Warp) · Blur Busters (G-Sync 101; multi-monitor 24H2) · Tom's Hardware / Neowin (coste de VBS) · Phoronix / TechRadar / Hardware Unboxed (24H2 vs 25H2) · TFTCentral / RTINGS (Samsung QD-OLED 4K 240; DSC; VRR Control) · Microsoft Learn (Azure Attestation; HVCI).</p>
+    <p style="margin-top:12px; color:var(--muted);">Investigación: workflow de 8 agentes · 160 búsquedas/fetch · verificación adversarial en los 3 puntos críticos (anti-cheat / Secure Boot / rendimiento).</p>
+  </footer>
+
+</div>
