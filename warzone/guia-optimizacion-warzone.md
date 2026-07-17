@@ -220,6 +220,19 @@ El **microstutter por refrescos mixtos (240 + 60) sigue vivo en Windows 11 24H2*
 3. Si un ajuste **mete stutter**, **revártelo**. "Más FPS de media" con peor 1 % low se siente peor.
 4. Tu **11–15 ms de Game Latency** es tu línea base de élite: consérvala, no la degrades por perseguir números.
 
+### Medición en vivo (script `medir-en-vivo.ps1`)
+Para no adivinar, corre **`medir-en-vivo.ps1`** (mismo repo) durante 1–2 partidas. Es
+**anti-cheat seguro** (no inyecta ni toca el juego; solo lee `nvidia-smi` + contadores WMI).
+Al terminar te da un **resumen con conclusiones**: % de tiempo **GPU-bound**, VRAM pico,
+temperaturas/clocks (¿throttle?), carga de CPU y núcleo más alto, y si tu límite es la GPU
+(→ bajar resolución) o algo que la frena. Uso:
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+.\medir-en-vivo.ps1               # mide hasta pulsar ENTER
+.\medir-en-vivo.ps1 -Minutos 25   # mide 25 min y para solo
+.\medir-en-vivo.ps1 -ConPresentMon  # además FPS/1%/0.1% low (requiere PresentMon.exe al lado)
+```
+
 ---
 
 ### Fuentes (verificadas, 2025–2026)
